@@ -45,3 +45,12 @@ body {
 #score-container {
     display: none;
 }
+.correct {
+    background-color: green;
+    color: white;
+}
+
+.incorrect {
+    background-color: red;
+    color: white;
+}

@@ -1,22 +1,26 @@
-import { questions} from 'questions.js'; //importing the qustions array from questions.js
+import { questions } from './questions.js'; 
 
-const questionElement = document.getElementById('question');
-const answerButtonElement = document.getElementById('answer-button');
-const nextButton = document.getElementById('nex-btn');
+const questionElement = document.getElementById('questions'); 
+const answerButtonsElement = document.getElementById('answer-buttons');
+const nextButton = document.getElementById('next-btn');
 const scoreContainer = document.getElementById('score-container');
 const scoreElement = document.getElementById('score');
-
 
 let currentQuestionIndex = 0;
 let score = 0;
 
-
 function startQuiz() {
+    scoreContainer.style.display = 'none'; // Hide score container at the start
+    setNextQuestion();
+
     nextButton.addEventListener('click', () => {
         currentQuestionIndex++;
-        setNextQuestion();
+        if (currentQuestionIndex < questions.length) {
+            setNextQuestion();
+        } else {
+            showScore();
+        }
     });
-    setNextQuestion();
 }
 
 function setNextQuestion() {
@@ -30,32 +34,48 @@ function showQuestion(question) {
         const button = document.createElement('button');
         button.innerText = answer.text;
         button.classList.add('btn');
-        button.addEventListener('click', () => selectAnswer(answer));
+        button.addEventListener('click', () => selectAnswer(button, answer));
         answerButtonsElement.appendChild(button);
     });
 }
 
 function resetState() {
-    nextButton.classList.add('hide');
+    nextButton.classList.add('hide'); // Hide the "Next" button at the start of a new question
     while (answerButtonsElement.firstChild) {
         answerButtonsElement.removeChild(answerButtonsElement.firstChild);
     }
 }
 
-function selectAnswer(answer) {
+function selectAnswer(button, answer) {
+    Array.from(answerButtonsElement.children).forEach(btn => {
+        btn.disabled = true; // Disable all buttons after selecting an answer
+    });
+
+    const correctAnswer = questions[currentQuestionIndex].answers.find(ans => ans.correct);
+    
     if (answer.correct) {
         score++;
+        button.classList.add('correct');
+        button.innerHTML += ' &#10004;'; // Add tick sign to correct answer
+    } else {
+        button.classList.add('incorrect');
+        button.innerHTML += ' &#10060;'; // Add wrong sign to incorrect answer
     }
-    nextButton.classList.remove('hide');
-    if (currentQuestionIndex >= questions.length - 1) {
-        nextButton.innerText = 'Finish';
-        nextButton.addEventListener('click', showScore);
-    }
+
+    // Highlight the correct answer if the selected answer was incorrect
+    Array.from(answerButtonsElement.children).forEach(btn => {
+        if (btn.innerText === correctAnswer.text && !answer.correct) {
+            btn.classList.add('correct');
+            btn.innerHTML += ' &#10004;';
+        }
+    });
+
+    nextButton.classList.remove('hide'); // Show the "Next" button
 }
 
 function showScore() {
     scoreContainer.style.display = 'block';
-    scoreElement.innerText = score;
+    scoreElement.innerText = `${score} out of ${questions.length}`;
     nextButton.style.display = 'none';
     questionElement.style.display = 'none';
     answerButtonsElement.style.display = 'none';
